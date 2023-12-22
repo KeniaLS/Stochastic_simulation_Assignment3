@@ -78,8 +78,4 @@ def linear_cooling(temp, cooling_rate):
     return temp - cooling_rate
 
 def exponential_cooling(temp, cooling_rate):
-    return temp * cooling_rate
-
-    
-
-
+    return temp * cooling_rate   
