@@ -91,3 +91,45 @@ plt.plot(time_points, solution_sa[:, 0])
 plt.scatter(time_points, observed_y, label='Observed Y')
 plt.plot(time_points, solution_sa[:, 1])
 plt.show()
+
+opt_error_mse_sa = []
+opt_error_mae_sa = []
+
+
+no_iter = range(50, 2000, 100)
+temp_range = range(1, 50, 1)
+
+for temp in temp_range:
+    iterations = 500
+    print(temp)
+    guess = np.array([2.07697341, 1.31609389, 0.44702719, 0.97037843])
+    param_SA_MSE = []
+    param_SA_MAE = []
+    for j in range(20):
+        step_size = 0.1
+        opt_param_sa_MSE = simulated_annealing(guess, time_points, given_data, iterations, temp, "MSE", "Logarithmic")
+        opt_param_sa_MAE = simulated_annealing(guess, time_points, given_data, iterations, temp, "MAE", "Logarithmic")
+        param_SA_MSE.append(opt_param_sa_MAE)
+        param_SA_MAE.append(opt_param_sa_MSE) 
+        print("simulation", j)
+    
+    optimised_param_sa_MSE = np.mean(np.array(param_SA_MSE), axis =0)
+    optimised_param_sa_MAE = np.mean(np.array(param_SA_MAE), axis =0)
+    mae_error_sa_MSE = objective_function_MAE(optimised_param_sa_MSE, observed_x, observed_y, time_points)
+    mae_error_sa_MAE = objective_function_MAE(optimised_param_sa_MAE, observed_x, observed_y, time_points)
+    opt_error_mse_sa.append(mae_error_sa_MSE)
+    opt_error_mae_sa.append(mae_error_sa_MAE)
+
+
+#confidence interval for MAE 
+ci_mse_sa = 1.96 * np.std(opt_error_mse_sa)/np.sqrt(len(opt_error_mse_sa))
+ci_mae_sa= 1.96 * np.std(opt_error_mae_sa)/np.sqrt(len(opt_error_mae_sa))
+# Plot MAE and its confidence interval
+plt.plot(temp_range, opt_error_mse_sa, label='MSE')
+plt.fill_between(temp_range, opt_error_mse_sa - ci_mse_sa, opt_error_mse_sa + ci_mse_sa, color='blue', alpha=0.3)
+plt.plot(temp_range, opt_error_mae_sa, label='MAE')
+plt.fill_between(temp_range, opt_error_mae_sa - ci_mae_sa, opt_error_mae_sa + ci_mae_sa, color='orange', alpha=0.3)
+plt.xlabel('Temperature')
+plt.ylabel('Error')
+plt.legend()
+plt.show()
