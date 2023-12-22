@@ -2,6 +2,9 @@ from read_csv import read_data
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
+from model import *
+
+from scipy.special import expit
 
 
 
@@ -131,8 +134,12 @@ def critical_points_analysis(observed_x, observed_y, time_points, parameters, fi
     return mse, mse_x_no_mask, mse_y_no_mask
 
 
-def simulated_annealing_critical_points(initial_guess, time_points, observed_data, iterations, step_size, fixed_time_series, num_points, temp):
+def simulated_annealing_critical_points(initial_guess, time_points, observed_data, iterations, temp, 
+                                         fixed_time_series, num_points, cooling_type):
+    
     x_value, y_value = observed_data
+    step_size = 0.1
+    current_temperature = temp
 
     best = initial_guess
     best_eval, mse_x_no_mask, mse_y_no_mask = critical_points_analysis(x_value, y_value, time_points, best, fixed_time_series, num_points)
@@ -152,10 +159,18 @@ def simulated_annealing_critical_points(initial_guess, time_points, observed_dat
 
         if candidate_eval < best_eval:
             best, best_eval = candidate, candidate_eval
+
+        if cooling_type == "Linear":
+            current_temperature = linear_cooling(current_temperature, 0.001)
+        elif cooling_type == "Exp":
+            current_temperature = exponential_cooling(current_temperature, 0.95)
+        elif cooling_type == "Logarithmic":
+            current_temperature = logarithmic_cooling(temp, i)
+
             
         diff = candidate_eval - curr_eval
-        t = temp / float(i + 1)
-        metropolis = np.exp(-diff / t)
+    
+        metropolis = np.exp(-diff / current_temperature)
         if diff < 0 or np.random.rand() < metropolis:
             curr, curr_eval = candidate, candidate_eval
     return best
@@ -165,7 +180,7 @@ given_data = [observed_x, observed_y]
 
 points = len(time_points)
 guess = np.array([2.07697341, 1.31609389, 0.44702719, 0.97037843])
-temp = 5
+
 
 
 
@@ -173,6 +188,8 @@ temp = 5
 #Change to "y fixed" to fix y_data and variable x_data
 #Change to "none fixed" to not fix any data
 fixed_time_series = 'x fixed'
+cooling_type = 'Exp'  # Other options: 'Linear' , 'Logarithmic'
+temp = 5
 
 mean_error = []
 std_error = []
@@ -182,12 +199,14 @@ for i in range(points):
     mse_per_iter = []
     opt_param = []
     
-    for _ in range(20):
+    for _ in range(10):
         
-        iterations = 100
+        iterations = 50
         step_size = 0.1
-        param = simulated_annealing_critical_points(guess, time_points, given_data, iterations, step_size,
-                                     fixed_time_series, i, temp) # obtain optimized parameters after increasing number of points removed
+        param = simulated_annealing_critical_points(guess, time_points, given_data, iterations, temp, 
+                                     fixed_time_series, i, cooling_type) # obtain optimized parameters after increasing number of points removed
+    
+        
         solution = odeint(system_equation, [observed_x[0], observed_y[0]], time_points, args=(param,))
         model_predictions_x = solution[:, 0]
         model_predictions_y = solution[:, 1]
@@ -218,8 +237,7 @@ std_error = np.array(std_error)
 # plt.show()
 
 
-plt.errorbar(range(1, points + 1), mean_error, yerr=std_error, fmt='o-', label=f"MSE: {fixed_time_series}")
-plt.yscale('log')
+plt.errorbar(range(1, points + 1), mean_error, yerr=std_error, fmt='o-', label=f"MSE, Cooling type: {fixed_time_series, cooling_type}")
 plt.xlabel("Number of points removed")
 plt.ylabel("Mean MSE")
 plt.title("Simulated Annealing")

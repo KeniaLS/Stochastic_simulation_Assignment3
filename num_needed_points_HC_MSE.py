@@ -172,13 +172,13 @@ std_error = []
 #Change to "x fixed" to fix x_data and variable y_data
 #Change to "y fixed" to fix y_data and variable x_data
 #Change to "none fixed" to not fix any data
-time_series = "none fixed"
+time_series = "x fixed"
 
 for i in range(points):
     mse_per_iter = []
     
-    for _ in range(20):
-        iterations = 100
+    for _ in range(100):
+        iterations = 1500
         step_size = 0.1
         given_data = [observed_x, observed_y]
         optimized_parameters = hill_climbing(guess, time_points, given_data, iterations, step_size, time_series, i) # obtain optimized parameters after increasing number of points removed
