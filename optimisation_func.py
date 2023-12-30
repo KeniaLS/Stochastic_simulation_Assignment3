@@ -9,6 +9,20 @@ from scipy.integrate import odeint
 
 
 def hill_climbing(initial_guess, time_points, observed_data, iterations, step_size, obj_func):
+    """
+    Perform hill climbing optimization.
+
+    Parameters:
+    - initial_guess (array): Initial guess for the optimization.
+    - time_points (array): Time points for the observed data.
+    - observed_data (tuple): Tuple containing x and y observed data arrays.
+    - iterations (int): Number of iterations for the optimization.
+    - step_size (float): Size of the step to generate a random neighbor.
+    - obj_func (str): Objective function type (MSE, RMSE, or MAE).
+
+    Returns:
+    - array: Optimized parameters.
+    """
     
     x_observed, y_observed = observed_data
     current_solution = initial_guess
@@ -44,6 +58,21 @@ def hill_climbing(initial_guess, time_points, observed_data, iterations, step_si
 
 
 def simulated_annealing(initial_guess, time_points, observed_data, iterations, temp, obj_func, cooling_type):
+    """
+    Perform simulated annealing optimization.
+
+    Parameters:
+    - initial_guess (array): Initial guess for the optimization.
+    - time_points (array): Time points for the observed data.
+    - observed_data (tuple): Tuple containing x and y observed data arrays.
+    - iterations (int): Number of iterations for the optimization.
+    - temp (float): Initial temperature for simulated annealing.
+    - obj_func (str): Objective function type (MSE, RMSE, or MAE).
+    - cooling_type (str): Type of cooling schedule (Linear, Exp, or Logarithmic).
+
+    Returns:
+    - array: Optimized parameters.
+    """
     
     x_value, y_value = observed_data
     current_temperature  = temp
