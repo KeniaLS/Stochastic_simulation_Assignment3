@@ -7,6 +7,12 @@ from scipy.integrate import odeint
 
 
 def read_data():
+    """
+    Read predator-prey data from a CSV file.
+
+    Returns:
+    - Tuple: Tuple containing time points, predator data, and prey data.
+    """
     
     # Define the file path
     csv_file_path = 'predator_prey_data.csv'
@@ -34,6 +40,12 @@ def read_data():
     return t_data, x_data, y_data
 
 def plot_given_data():
+    """
+    Plot the given predator-prey data.
+
+    Returns:
+    - None
+    """
     t, x , y = read_data()
     plt.scatter(t,x, label="Predator")
     plt.scatter(t,y, label="Prey")
