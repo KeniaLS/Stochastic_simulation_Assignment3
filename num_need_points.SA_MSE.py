@@ -2,7 +2,7 @@ from read_csv import read_data
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-from model import *
+from helper_functions import *
 
 from scipy.special import expit
 
