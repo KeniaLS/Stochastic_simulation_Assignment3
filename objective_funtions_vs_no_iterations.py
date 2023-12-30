@@ -26,36 +26,45 @@ for iterations in no_iter:
     param_sa_rmse = []
     for j in range(20):
         step_size = 0.1
+        # Perform simulated annealing for MSE, MAE, and RMSE
         para_sa_MSE = simulated_annealing(guess, time_points, given_data, iterations, 5, "MSE", "Exp")
         para_sa_MAE = simulated_annealing(guess, time_points, given_data, iterations, 5, "MAE", "Exp")
         para_sa_RMSE = simulated_annealing(guess, time_points, given_data, iterations, 5, "RMSE", "Exp")
+        # Collect optimization results for each run
         param_sa_mse.append(para_sa_MSE)
         param_sa_rmse.append(para_sa_RMSE)
         param_sa_mae.append(para_sa_MAE)  
         
         print("simulation", j)
+        
     
+    # Calculate mean values of optimization results
     opt_param_sa_mse = np.mean(np.array(param_sa_mse), axis =0)
     opt_param_sa_rmse = np.mean(np.array(param_sa_rmse), axis =0)
     opt_param_sa_mae = np.mean(np.array(param_sa_mae), axis =0)
+    
+    # Calculate errors using optimized parameters
     mse_error_sa = objective_function_MSE(opt_param_sa_mse, observed_x, observed_y, time_points)
     rmse_error_sa = objective_function_RMSE(opt_param_sa_rmse, observed_x, observed_y, time_points)
     mae_error_sa = objective_function_MAE(opt_param_sa_mae, observed_x, observed_y, time_points)
+
+    # Update minimum error and optimum parameters if necessary
     if  mse_error_sa < min_error:
         min_error = mse_error_sa
         optimum_param = opt_param_sa_mse
-        
+
+    # Store errors for later analysis
     sa_mse.append(mse_error_sa)
     sa_rmse.append(rmse_error_sa)
     sa_mae.append(mae_error_sa)
     
     
-#confidence interval for MSE 
+#confidence interval for MSE , MAE and RMSE
 ci_mse_sa = 1.96 * np.std(sa_mse)/np.sqrt(len(sa_mse))
 ci_mae_sa = 1.96 * np.std(sa_mae)/np.sqrt(len(sa_mae))
 ci_rmse_sa = 1.96 * np.std(sa_rmse)/np.sqrt(len(sa_rmse))
-# Plot MAE and its confidence interval
 
+# Plot MAE and its confidence interva
 color_mse = 'blue'
 color_mae = 'orange'
 color_rmse = 'green'
@@ -92,31 +101,48 @@ plt.scatter(time_points, observed_y, label='Observed Y')
 plt.plot(time_points, solution_sa[:, 1])
 plt.show()
 
+# Initialize lists to store optimization errors
 opt_error_mse_sa = []
 opt_error_mae_sa = []
 
-
+# Range of iterations for the second part of simulated annealing
 no_iter = range(50, 2000, 100)
 temp_range = range(1, 50, 1)
 
+
+# Range of temperatures for the second part of simulated annealing
 for temp in temp_range:
+    # Set the number of iterations    
     iterations = 500
-    print(temp)
+    # initial guess
     guess = np.array([2.07697341, 1.31609389, 0.44702719, 0.97037843])
+
+    # Lists to store optimization results for each iteration
     param_SA_MSE = []
     param_SA_MAE = []
+    
+    # Run simulated annealing 20 times
     for j in range(20):
         step_size = 0.1
+        
+        # Perform simulated annealing for MSE and MAE using Logarithmic scaling
         opt_param_sa_MSE = simulated_annealing(guess, time_points, given_data, iterations, temp, "MSE", "Logarithmic")
         opt_param_sa_MAE = simulated_annealing(guess, time_points, given_data, iterations, temp, "MAE", "Logarithmic")
+
+        # Collect optimization results for each run
         param_SA_MSE.append(opt_param_sa_MAE)
         param_SA_MAE.append(opt_param_sa_MSE) 
         print("simulation", j)
-    
+
+    # Calculate mean values of optimization results
     optimised_param_sa_MSE = np.mean(np.array(param_SA_MSE), axis =0)
     optimised_param_sa_MAE = np.mean(np.array(param_SA_MAE), axis =0)
+
+    # Calculate errors using optimized parameters
     mae_error_sa_MSE = objective_function_MAE(optimised_param_sa_MSE, observed_x, observed_y, time_points)
     mae_error_sa_MAE = objective_function_MAE(optimised_param_sa_MAE, observed_x, observed_y, time_points)
+
+    # Store errors for later analysis
     opt_error_mse_sa.append(mae_error_sa_MSE)
     opt_error_mae_sa.append(mae_error_sa_MAE)
 
