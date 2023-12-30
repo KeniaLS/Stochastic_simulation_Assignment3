@@ -1,5 +1,5 @@
 from read_csv import read_data
-from model import *
+from helper_functions import *
 from optimisation_func import * 
 import numpy as np
 import matplotlib.pyplot as plt
