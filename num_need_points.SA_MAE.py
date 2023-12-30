@@ -9,7 +9,17 @@ from helper_functions import *
 
 
 def system_equation(var, t, parameters):
- 
+ """
+    Define the system of differential equations.
+
+    Parameters:
+    - var (array): State variables [x, y].
+    - t (float): Time.
+    - parameters (array): System parameters [alpha, beta, delta, gamma].
+
+    Returns:
+    - array: Derivatives [dx, dy].
+    """
     x = var[0]
     y = var[1]
     alpha, beta, delta, gamma = parameters
@@ -21,14 +31,35 @@ def system_equation(var, t, parameters):
 
 # Function to remove data points from a time series
 def remove_data_points(data, indices_to_remove):
+ """
+    Remove data points from a time series.
+
+    Parameters:
+    - data (array): Time series data.
+    - indices_to_remove (array): Indices of data points to be removed.
+
+    Returns:
+    - array: Time series data with specified points removed.
+    """
     data_removed = np.copy(data)
     data_removed_per_index = np.delete(data_removed, indices_to_remove, axis=0)
 
     return data_removed_per_index
 
 
-def random_choice(observed_x, observed_y, time_points, num_points): #remove one point at a time
+def random_choice(observed_x, observed_y, time_points, num_points):
+ """
+    Randomly select and remove data points from observed time series.
 
+    Parameters:
+    - observed_x (array): Observed x values.
+    - observed_y (array): Observed y values.
+    - time_points (array): Time points.
+    - num_points (int): Number of points to be removed.
+
+    Returns:
+    - Tuple: Tuple containing updated x, y, and time_points.
+    """
     rand_choice = np.random.choice(len(time_points), size=num_points)
 
     observed_x_removed = remove_data_points(observed_x, rand_choice)
@@ -41,6 +72,18 @@ def random_choice(observed_x, observed_y, time_points, num_points): #remove one 
     
 
 def objective_function_MAE_x_y_mask(parameters, x_data_mask, y_data_mask, t_data_mask):
+ """
+    Objective function for Mean Absolute Error (MAE) with masked x and y data.
+
+    Parameters:
+    - parameters (array): Model parameters [alpha, beta, delta, gamma].
+    - x_data_mask (array): Masked observed x values.
+    - y_data_mask (array): Masked observed y values.
+    - t_data_mask (array): Masked time points.
+
+    Returns:
+    - Tuple: MAE for x and y.
+    """
 
     initial_c = [x_data_mask[0], y_data_mask[0]]
     solution = odeint(system_equation, initial_c, t_data_mask, args=(parameters,))
@@ -59,6 +102,19 @@ def objective_function_MAE_x_y_mask(parameters, x_data_mask, y_data_mask, t_data
 
 
 def objective_function_MAE_x_mask(parameters, x_value, y_value, t_value, num_points): # Y value fixed
+ """
+    Objective function for Mean Absolute Error (MAE) with masked x data.
+
+    Parameters:
+    - parameters (array): Model parameters [alpha, beta, delta, gamma].
+    - x_value (array): Observed x values.
+    - y_value (array): Observed y values.
+    - t_value (array): Time points.
+    - num_points (int): Number of points to be removed.
+
+    Returns:
+    - Tuple: Total MAE, MAE for x, and MAE for y.
+    """
 
     x_data_mask, y_data_mask, t_data_mask = random_choice(x_value, y_value, t_value, num_points)   
 
@@ -76,6 +132,19 @@ def objective_function_MAE_x_mask(parameters, x_value, y_value, t_value, num_poi
 
 
 def objective_function_MAE_y_mask(parameters, x_value, y_value, t_value, num_points): # X values are fixed
+ """
+    Objective function for Mean Absolute Error (MAE) with masked y data.
+
+    Parameters:
+    - parameters (array): Model parameters [alpha, beta, delta, gamma].
+    - x_value (array): Observed x values.
+    - y_value (array): Observed y values.
+    - t_value (array): Time points.
+    - num_points (int): Number of points to be removed.
+
+    Returns:
+    - Tuple: Total MAE, MAE for x, and MAE for y.
+    """
 
     x_data_mask, y_data_mask, t_data_mask = random_choice(x_value, y_value, t_value, num_points) 
 
@@ -94,7 +163,20 @@ def objective_function_MAE_y_mask(parameters, x_value, y_value, t_value, num_poi
 
 
 def critical_points_analysis(observed_x, observed_y, time_points, parameters, fixed_time_series, num_points):
+ """
+    Analyze critical points using Mean Absolute Error (MAE) with fixed time series.
 
+    Parameters:
+    - observed_x (array): Observed x values.
+    - observed_y (array): Observed y values.
+    - time_points (array): Time points.
+    - parameters (array): Model parameters [alpha, beta, delta, gamma].
+    - fixed_time_series (str): Type of fixed time series ('x fixed', 'y fixed', 'none fixed').
+    - num_points (int): Number of points to be removed.
+
+    Returns:
+    - float: Mean Absolute Error (MAE).
+    """
        
     if fixed_time_series == "x fixed":
         mae, _, _ = objective_function_MAE_y_mask(parameters, observed_x, observed_y, time_points, num_points)
@@ -112,6 +194,22 @@ def critical_points_analysis(observed_x, observed_y, time_points, parameters, fi
 
 def simulated_annealing_critical_points(initial_guess, time_points, observed_data, iterations,
                                         temp, fixed_time_series, num_points, cooling_type):
+                                         """
+    Perform simulated annealing for critical points analysis.
+
+    Parameters:
+    - initial_guess (array): Initial guess for model parameters.
+    - time_points (array): Time points.
+    - observed_data (tuple): Tuple containing observed x and y values.
+    - iterations (int): Number of iterations for simulated annealing.
+    - temp (float): Initial temperature.
+    - fixed_time_series (str): Type of fixed time series ('x fixed', 'y fixed', 'none fixed').
+    - num_points (int): Number of points to be removed.
+    - cooling_type (str): Type of cooling schedule ('Linear', 'Exp', 'Logarithmic').
+
+    Returns:
+    - array: Optimized parameters.
+    """
 
     x_value, y_value = observed_data
     step_size = 0.1
